@@ -14,17 +14,16 @@ module BDD = struct
 
   type t = {
     unique_table : NodeSet.t;
-    root : node;
+    n : int;
   }
 
   let const b = match b with
-    | true -> {unique_table = NodeSet.singleton(One); root = One}
-    | false -> {unique_table = NodeSet.singleton(Zero); root = Zero}
+    | true -> {unique_table = NodeSet.singleton(One); n = 0}
+    | false -> {unique_table = NodeSet.singleton(Zero); n = 0}
 
   let var i =
-    let root = Node (i, Zero, One, None) in
-    let unique_table = NodeSet.of_list([Zero; One; root]) in
-    {unique_table; root}
+    let unique_table = NodeSet.of_list([Zero; One; Node (i, Zero, One, None)]) in
+    {unique_table; n = 1}
   
   let resolve : node -> node = fun u ->
     let get_distination v = match v with
@@ -40,5 +39,15 @@ module BDD = struct
     | Zero | One -> u
     | Node (i, u0, u1, _) ->
         if u0 = u1 then Node (i, u0, u1, Some u0) else u
+
+  let reduce : t -> t = fun bst ->
+    let rec loop : int -> NodeSet.t -> NodeSet.t = fun i ut ->
+      if i = bst.n + 1 then ut else
+      let ut' = NodeSet.map (fun u -> match u with
+                  | Node (i, _, _, _) -> u |> resolve |> reduce_by_r1
+                  | _ -> u) ut
+      in loop (i + 1) ut'
+    in
+    { unique_table = loop 1 bst.unique_table; n = bst.n}
 
 end
