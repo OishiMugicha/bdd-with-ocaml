@@ -50,4 +50,19 @@ module BDD = struct
     in
     { unique_table = loop 1 bst.unique_table; n = bst.n}
 
+  module CacheKey = struct
+    type t = node * node
+    let compare = compare
+  end
+
+  module CacheMap = Map.Make(CacheKey)
+
+  type cache = node CacheMap.t
+
+  let empty_cache = CacheMap.empty
+
+  let apply : (bool -> bool -> bool) -> t -> t -> t = fun op f g ->
+    let cache = empty_cache in
+    f
+
 end
