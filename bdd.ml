@@ -96,6 +96,28 @@ module BDD = struct
         cache := CacheMap.add (u, v) w !cache;
         w
       in
+      let left_higher u v =
+        match u with
+        | Zero | One -> raise (Invalid_argument "")
+        | Node (i, u0, u1, _) ->
+            let w0 = apply_inner u0 v in
+            let w1 = apply_inner u1 v in
+            let w = if w0 = w1 then w0 else Node (i, w0, w1, None) in
+            ut := NodeSet.add w !ut;
+            cache := CacheMap.add (u, v) w !cache;
+            w
+      in
+      let right_higher u v =
+        match v with
+        | Zero | One -> raise (Invalid_argument "")
+        | Node (j, v0, v1, _) ->
+            let w0 = apply_inner u v0 in
+            let w1 = apply_inner u v0 in
+            let w = if w0 = w1 then w0 else Node (j, w0, w1, None) in
+            ut := NodeSet.add w !ut;
+            cache := CacheMap.add (u, v) w !cache;
+            w
+      in
       u
     in
     f
