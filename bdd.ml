@@ -25,5 +25,20 @@ module BDD = struct
     let root = Node (i, Zero, One, None) in
     let unique_table = NodeSet.of_list([Zero; One; root]) in
     {unique_table; root}
+  
+  let resolve : node -> node = fun u ->
+    let get_distination v = match v with
+      | Zero | One -> v
+      | Node (_, _, _, aux) -> Option.value aux ~default: v
+    in
+    match u with
+    | Zero | One -> u
+    | Node (i, u0, u1, aux) -> Node ( i, get_distination u0, get_distination u1, aux)
+  
+  let reduce_by_r1 : node -> node = fun u ->
+    match u with
+    | Zero | One -> u
+    | Node (i, u0, u1, _) ->
+        if u0 = u1 then Node (i, u0, u1, Some u0) else u
 
 end
