@@ -17,6 +17,13 @@ module BDD = struct
     root : node;
   }
 
-  
+  let const b = match b with
+    | true -> {unique_table = NodeSet.singleton(One); root = One}
+    | false -> {unique_table = NodeSet.singleton(Zero); root = Zero}
+
+  let var i =
+    let root = Node (i, Zero, One, None) in
+    let unique_table = NodeSet.of_list([Zero; One; root]) in
+    {unique_table; root}
 
 end
