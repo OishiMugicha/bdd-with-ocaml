@@ -65,4 +65,20 @@ module BDD = struct
     let cache = empty_cache in
     f
 
+  let index : node -> int = fun u ->
+    match u with
+    | Zero | One -> 0
+    | Node (i, _, _, _) -> i
+  
+  let top : t -> node = fun f ->
+    NodeSet.find_first (fun u -> index u = f.n) f.unique_table
+  
+  let get_bool_opt : t -> bool option = fun f ->
+    match top f with
+    | Zero -> Some false
+    | One -> Some true
+    | _ -> None
+  
+  
+
 end
