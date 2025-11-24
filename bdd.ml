@@ -42,11 +42,13 @@ module BDD = struct
 
   let reduce : t -> t = fun bst ->
     let rec loop : int -> NodeSet.t -> NodeSet.t = fun i ut ->
-      if i = bst.n + 1 then ut else
-      let ut' = NodeSet.map (fun u -> match u with
-                  | Node (i, _, _, _) -> u |> resolve |> reduce_by_r1
-                  | _ -> u) ut
-      in loop (i + 1) ut'
+      if i = bst.n + 1 then
+        ut (* 要修正 *)
+      else
+        let ut' = NodeSet.map (fun u -> match u with
+                    | Node (i, _, _, _) -> u |> resolve |> reduce_by_r1
+                    | _ -> u) ut
+        in loop (i + 1) ut'
     in
     { unique_table = loop 1 bst.unique_table; n = bst.n}
 
@@ -126,7 +128,7 @@ module BDD = struct
         else if i < j then
           left_higher u v
         else
-          right_higher u v        
+          right_higher u v
       in
       ut := NodeSet.add w !ut;
       cache := CacheMap.add (u, v) w !cache;
@@ -134,5 +136,8 @@ module BDD = struct
     in
     let root = apply_inner (top f) (top g) in
     { unique_table = !ut; n = index root }
+
+  let equal : t -> t -> bool = fun f g ->
+    NodeSet.equal f.unique_table g.unique_table
 
 end
