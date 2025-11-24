@@ -61,9 +61,6 @@ module BDD = struct
 
   let empty_cache = CacheMap.empty
 
-  let apply : (bool -> bool -> bool) -> t -> t -> t = fun op f g ->
-    let cache = empty_cache in
-    f
 
   let index : node -> int = fun u ->
     match u with
@@ -73,12 +70,35 @@ module BDD = struct
   let top : t -> node = fun f ->
     NodeSet.find_first (fun u -> index u = f.n) f.unique_table
   
-  let get_bool_opt : t -> bool option = fun f ->
-    match top f with
+  let get_bool_opt : node -> bool option = fun u ->
+    match u with
     | Zero -> Some false
     | One -> Some true
     | _ -> None
   
+  let bool_to_node : bool -> node = fun b ->
+    if b then One else Zero
   
+  let apply : (bool -> bool -> bool) -> t -> t -> t = fun op f g ->
+    let cache = ref CacheMap.empty in
+    let ut = ref NodeSet.empty in
+    let rec apply_inner : node -> node -> node = fun u v ->
+      let const_with_const u v =
+        let b = match (u, v) with
+          | (Zero, Zero) -> op false false
+          | (Zero, One) -> op false true
+          | (One, Zero) -> op true false
+          | (One, One) -> op true true
+          | _ -> raise (Invalid_argument "")
+        in
+        let w = bool_to_node b in
+        ut := NodeSet.add w !ut;
+        cache := CacheMap.add (u, v) w !cache;
+        w
+      in
+      u
+    in
+    f
+
 
 end
