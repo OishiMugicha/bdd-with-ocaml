@@ -132,7 +132,7 @@ module BDD = struct
       cache := CacheMap.add (u, v) w !cache;
       w
     in
-    f
-
+    let root = apply_inner (top f) (top g) in
+    { unique_table = !ut; n = index root }
 
 end
