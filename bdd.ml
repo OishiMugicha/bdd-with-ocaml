@@ -91,10 +91,15 @@ module BDD = struct
           | (One, One) -> op true true
           | _ -> raise (Invalid_argument "")
         in
-        let w = bool_to_node b in
-        ut := NodeSet.add w !ut;
-        cache := CacheMap.add (u, v) w !cache;
-        w
+        bool_to_node b
+      in
+      let equal_height u v = 
+        match (u, v) with
+        | (Node (i, u0, u1, _), Node (_, v0, v1, _)) ->
+            let w0 = apply_inner u0 v0 in
+            let w1 = apply_inner u1 v1 in
+            if w0 = w1 then w0 else Node (i, w0, w1, None)
+        | _ -> raise (Invalid_argument "")
       in
       let left_higher u v =
         match u with
@@ -102,10 +107,7 @@ module BDD = struct
         | Node (i, u0, u1, _) ->
             let w0 = apply_inner u0 v in
             let w1 = apply_inner u1 v in
-            let w = if w0 = w1 then w0 else Node (i, w0, w1, None) in
-            ut := NodeSet.add w !ut;
-            cache := CacheMap.add (u, v) w !cache;
-            w
+            if w0 = w1 then w0 else Node (i, w0, w1, None)
       in
       let right_higher u v =
         match v with
@@ -113,12 +115,22 @@ module BDD = struct
         | Node (j, v0, v1, _) ->
             let w0 = apply_inner u v0 in
             let w1 = apply_inner u v0 in
-            let w = if w0 = w1 then w0 else Node (j, w0, w1, None) in
-            ut := NodeSet.add w !ut;
-            cache := CacheMap.add (u, v) w !cache;
-            w
+            if w0 = w1 then w0 else Node (j, w0, w1, None)
       in
-      u
+      let (i, j) = (index u, index v) in
+      let w =
+        if (i, j) = (0, 0) then
+          const_with_const u v
+        else if i = j then
+          equal_height u v
+        else if i < j then
+          left_higher u v
+        else
+          right_higher u v        
+      in
+      ut := NodeSet.add w !ut;
+      cache := CacheMap.add (u, v) w !cache;
+      w
     in
     f
 
