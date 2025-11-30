@@ -57,17 +57,26 @@ struct
       | (Zero, _) -> g
       | (_, Zero) -> f
       | (One, One) -> Zero
-      | (One, V (j, g0, g1)) -> V (j, g0, plus One g1)
-      | (V (i, f0, f1), One) -> V (i, f0, plus f1 One)
+      | (One, V (j, g0, g1)) -> V (j, g1, plus One g0)
+      | (V (i, f0, f1), One) -> V (i, f1, plus f0 One)
       | (V (i, f0, f1), V (j, g0, g1)) ->
-          if i < j then V (i, f0, plus f1 g)
-          else if i > j then V (j, g0, plus f g1)
-          else V (i, plus f0 g0, plus f1 g1)
+          if i < j then V (i, f1, plus f0 g)
+          else if i > j then V (j, g1, plus f g0)
+          else V (i, plus f1 g1, plus f0 g0)
 
-  
+  (* mul 関数のナイーブな実装 *)
+  let rec mul : t -> t -> t = fun f g ->
+    match (f, g) with
+      | (Zero, _) -> Zero
+      | (_, Zero) -> Zero
+      | (One, _) -> g
+      | (_, One) -> f
+      | (V (i, f0, f1), V (j, g0, g1)) ->
+          if i < j then V (i, mul f1 g, mul f0 g)
+          else if i > j then V (j, mul f g1, mul f g0)
+          else V (i, plus (plus (mul f1 g1) (mul f1 g0)) (mul f0 g1), mul f0 g0)
   
   (* 
-  val mul : t -> t -> t
   val deg : t -> int
   val lead : t -> t
   val nf : t list -> t -> t *)
