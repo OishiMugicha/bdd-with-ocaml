@@ -76,8 +76,17 @@ struct
           else if i > j then V (j, mul f g1, mul f g0)
           else V (i, plus (plus (mul f1 g1) (mul f1 g0)) (mul f0 g1), mul f0 g0)
   
+  (* 多項式の次数 *)
+  let rec deg : t -> int = fun f ->
+    match f with
+      | Zero -> 0
+      | One -> 0
+      | V (i, f0, f1) -> max (deg f1 + 1) (deg f0)
+  
+  (* leading monomial *)
+  let lead : t -> t = fun f ->
+    f
+  
   (* 
-  val deg : t -> int
-  val lead : t -> t
   val nf : t list -> t -> t *)
 end
