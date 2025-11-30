@@ -15,8 +15,9 @@ sig
   (* Polynomial operations *)
   val plus : t -> t -> t
   val mul : t -> t -> t
+  val lead_and_deg : t -> t * int
   val deg : t -> int
-  val lead : t -> t
+  val lm : t -> t
   val nf : t list -> t -> t
 
   (* Examining functions *)
@@ -76,6 +77,18 @@ struct
           else if i > j then V (j, mul f g1, mul f g0)
           else V (i, plus (plus (mul f1 g1) (mul f1 g0)) (mul f0 g1), mul f0 g0)
   
+  (* leading monomial と degree *)
+  let rec lead_and_deg : t -> t * int = fun f ->
+    match f with
+      | Zero | One -> (One, 0)
+      | V (i, f0, f1) ->
+          let (h0, d0) = lead_and_deg f0 in
+          let (h1, d1) = lead_and_deg f1 in
+          if d0 < d1 + 1 then
+            (mul (var i) h1, d1 + 1)
+          else
+            (h0, d0)
+
   (* 多項式の次数 *)
   let rec deg : t -> int = fun f ->
     match f with
@@ -84,8 +97,7 @@ struct
       | V (i, f0, f1) -> max (deg f1 + 1) (deg f0)
   
   (* leading monomial *)
-  let lead : t -> t = fun f ->
-    f
+  let lm : t -> t = fun f -> fst (lead_and_deg f)
   
   (* 
   val nf : t list -> t -> t *)
