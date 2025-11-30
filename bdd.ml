@@ -44,7 +44,7 @@ module BDD = struct
   
   (** Algebraic operations **)
 
-  (* 二項演算の適用（ナイーブな実装） *)
+  (* 一般の二項演算子の適用（ナイーブな実装） *)
   let rec apply : (bool -> bool -> bool) -> t -> t -> t = fun op f g ->
     let new_vertex : int -> t -> t -> t = fun k w0 w1 ->
       if w0 = w1 then w0 else V(k, w0, w1)
@@ -61,9 +61,22 @@ module BDD = struct
             else if i > j then new_vertex j (apply op f g0) (apply op f g1)
             else new_vertex i (apply op f0 g0) (apply op f1 g1)
 
-  (* let not : t -> t
-  let and_ : t -> t -> t
-  let or_ : t -> t -> t
-  let xor_ : t -> t -> t *)
+  (* 単項 not 演算 *)
+  let rec not : t -> t = fun f ->
+    match f with
+      | Zero -> One
+      | One -> Zero
+      | V(i, f0, f1) -> V(i, not f0, not f1)
+
+  (* and 演算 *)
+  let and_ : t -> t -> t = apply (&&)
+
+  (* or 演算 *)
+  let or_ : t -> t -> t = apply (||)
+
+  (* xor 演算 *)
+  let xor_ : t -> t -> t = apply (<>)
+
+
 
 end
