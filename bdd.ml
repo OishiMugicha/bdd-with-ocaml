@@ -26,5 +26,24 @@ end
 
 (* BDD の実装 *)
 module BDD = struct
+  (* BDD の型定義 *)
+  type t =
+    | Zero
+    | One
+    | V of int * t * t (* (index, lo, hi) *)
+  
+  (** Base functions **)
+  
+  (* 定数 *)
+  let const : bool -> t = fun b ->
+    if b then One else Zero
+  
+  (* 変数 *)
+  let var : int -> t = fun i ->
+    V (i, Zero, One)
+  
+  (** Algebraic operations **)
+
+
 
 end
