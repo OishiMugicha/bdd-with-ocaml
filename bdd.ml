@@ -1,4 +1,4 @@
-(* BDD の signature *)
+(****** BDD の signature ******)
 module type BDDType =
 sig
   (* typedef *)
@@ -32,7 +32,7 @@ sig
 end
 
 
-(* BDD の実装 *)
+(****** BDD の実装 ******)
 module BDD : BDDType = 
 struct
   (* BDD の型定義 *)
@@ -190,7 +190,7 @@ let test_restrict_false_on_variable () =
 let test_relprod_of_two_vars () =
   let bdd1 = var 0 in
   let bdd2 = var 1 in
-  assert( equal (relprod bdd1 bdd2 [0; 1]) (and_ bdd1 bdd2) )
+  assert( equal (relprod bdd1 bdd2 [0; 1]) One )
 
 let test () =
     test_const_true ();
@@ -207,5 +207,5 @@ let test () =
     test_forall_on_single_variable ();
     test_restrict_true_on_variable ();
     test_restrict_false_on_variable ();
-    test_relprod_of_two_vars ();
+    test_relprod_of_two_vars (); 
     print_endline "All tests passed!"
