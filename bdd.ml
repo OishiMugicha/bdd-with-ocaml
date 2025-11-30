@@ -7,7 +7,7 @@ sig
   val var : int -> t
   (* Algebraic operations *)
   val apply : (bool -> bool -> bool) -> t -> t -> t
-  val not : t -> t
+  val not_ : t -> t
   val and_ : t -> t -> t
   val or_ : t -> t -> t
   val xor_ : t -> t -> t
@@ -21,17 +21,18 @@ sig
   val equal : t -> t -> bool
   val eval : t -> int list -> bool
   val satisfy : t -> bool
-  val satisfy_all : t -> int list list
 end
 
 (* BDD の実装 *)
-module BDD = struct
+module BDD : BDDType = struct
+
   (* BDD の型定義 *)
   type t =
     | Zero
     | One
     | V of int * t * t (* (index, lo, hi) *)
   
+
   (** Base functions **)
   
   (* 定数 *)
@@ -42,6 +43,7 @@ module BDD = struct
   let var : int -> t = fun i ->
     V (i, Zero, One)
   
+
   (** Algebraic operations **)
 
   (* 一般の二項演算子の適用（ナイーブな実装） *)
@@ -62,11 +64,11 @@ module BDD = struct
             else new_vertex i (apply op f0 g0) (apply op f1 g1)
 
   (* 単項 not 演算 *)
-  let rec not : t -> t = fun f ->
+  let rec not_ : t -> t = fun f ->
     match f with
       | Zero -> One
       | One -> Zero
-      | V(i, f0, f1) -> V(i, not f0, not f1)
+      | V(i, f0, f1) -> V(i, not_ f0, not_ f1)
 
   (* and 演算 *)
   let and_ : t -> t -> t = apply (&&)
@@ -76,6 +78,7 @@ module BDD = struct
 
   (* xor 演算 *)
   let xor_ : t -> t -> t = apply (<>)
+
 
   (** Nonalgebraic operations **)
 
@@ -90,7 +93,7 @@ module BDD = struct
 
   (* composition *)
   let compose : t -> int -> t -> t = fun f i g ->
-    or_ (and_ g (restrict f i true)) (and_ (not g) (restrict f i false))
+    or_ (and_ g (restrict f i true)) (and_ (not_ g) (restrict f i false))
   
   (* existential *)
   let rec exists : t -> int list -> t = fun f is ->
@@ -102,10 +105,26 @@ module BDD = struct
 
   (* univarsal *)
   let forall : t -> int list -> t = fun f is -> 
-    not (exists (not f) is)
+    not_ (exists (not_ f) is)
 
   (* relational product *)
   let relprod : t -> t -> int list -> t = fun f g is ->
     exists (and_ f g) is
+
+  
+  (** Examining functions **)
+  
+  (* reduce である場合、equality は単に "=" *)
+  let equal : t -> t -> bool = (=)
+  
+  (* evaluation *)
+  let rec eval : t -> int list -> bool = fun f is ->
+    match f with
+      | Zero -> false
+      | One -> true
+      | V (i, f0, f1) -> if List.mem i is then eval f1 is else eval f0 is
+
+  (* satisfiability *)
+  let satisfy : t -> bool = fun f -> not (equal Zero f)
 
 end
