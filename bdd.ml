@@ -77,6 +77,35 @@ module BDD = struct
   (* xor 演算 *)
   let xor_ : t -> t -> t = apply (<>)
 
+  (** Nonalgebraic operations **)
 
+  (* restriction *)
+  let rec restrict : t -> int -> bool -> t = fun f i b ->
+    match f with
+      | Zero | One -> f
+      | V(j, f0, f1) ->
+          if j = i
+            then if b then f1 else f0
+            else V(j, restrict f0 i b, restrict f1 i b)
+
+  (* composition *)
+  let compose : t -> int -> t -> t = fun f i g ->
+    or_ (and_ g (restrict f i true)) (and_ (not g) (restrict f i false))
+  
+  (* existential *)
+  let rec exists : t -> int list -> t = fun f is ->
+    match is with
+      | [] -> f
+      | (i::js) ->
+          let g = exists f js in
+          or_ (restrict g i false) (restrict g i true)
+
+  (* univarsal *)
+  let forall : t -> int list -> t = fun f is -> 
+    not (exists (not f) is)
+
+  (* relational product *)
+  let relprod : t -> t -> int list -> t = fun f g is ->
+    exists (and_ f g) is
 
 end
