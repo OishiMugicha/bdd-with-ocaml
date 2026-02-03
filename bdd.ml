@@ -122,7 +122,7 @@ struct
 
   (** Examining functions **)
 
-  (* reduce である場合、equality は単に "=" *)
+  (* reduced である場合、equality は単に "=" *)
   let equal : t -> t -> bool = (=)
 
   (* evaluation *)
