@@ -5,7 +5,7 @@ sig
   type t =
     | Zero
     | One
-    | V of int * t * t (* (index, lo, hi) *)
+    | VariableNode of int * t * t (* (index, lo, hi) *)
 
   (* Base functions *)
   val const : bool -> t
@@ -39,7 +39,7 @@ struct
   type t =
     | Zero
     | One
-    | V of int * t * t (* (index, lo, hi) *)
+    | VariableNode of int * t * t (* (index, lo, hi) *)
 
   (** Base functions **)
 
@@ -49,7 +49,7 @@ struct
 
   (* 変数 *)
   let var : int -> t = fun i ->
-    V (i, Zero, One)
+    VariableNode (i, Zero, One)
 
 
   (** Algebraic operations **)
@@ -57,16 +57,16 @@ struct
   (* 一般の二項演算子の適用（ナイーブな実装） *)
   let rec apply : (bool -> bool -> bool) -> t -> t -> t = fun op f g ->
     let new_vertex : int -> t -> t -> t = fun k w0 w1 ->
-      if w0 = w1 then w0 else V(k, w0, w1)
+      if w0 = w1 then w0 else VariableNode(k, w0, w1)
     in
     match (f, g) with
       | (Zero, Zero) -> const (op false false)
       | (Zero, One ) -> const (op false true )
       | (One , Zero) -> const (op true  false)
       | (One , One ) -> const (op true  true )
-      | (Zero, V(j, g0, g1)) | (One, V(j, g0, g1)) -> new_vertex j (apply op f g0) (apply op f g1)
-      | (V(i, f0, f1), Zero) | (V(i, f0, f1), One) -> new_vertex i (apply op f0 g) (apply op f1 g)
-      | (V(i, f0, f1), V(j, g0, g1)) ->
+      | (Zero, VariableNode(j, g0, g1)) | (One, VariableNode(j, g0, g1)) -> new_vertex j (apply op f g0) (apply op f g1)
+      | (VariableNode(i, f0, f1), Zero) | (VariableNode(i, f0, f1), One) -> new_vertex i (apply op f0 g) (apply op f1 g)
+      | (VariableNode(i, f0, f1), VariableNode(j, g0, g1)) ->
             if i < j then new_vertex i (apply op f0 g) (apply op f1 g)
             else if i > j then new_vertex j (apply op f g0) (apply op f g1)
             else new_vertex i (apply op f0 g0) (apply op f1 g1)
@@ -76,7 +76,7 @@ struct
     match f with
       | Zero -> One
       | One -> Zero
-      | V(i, f0, f1) -> V(i, not_ f0, not_ f1)
+      | VariableNode(i, f0, f1) -> VariableNode(i, not_ f0, not_ f1)
 
   (* and 演算 *)
   let and_ : t -> t -> t = apply (&&)
@@ -94,10 +94,10 @@ struct
   let rec restrict : t -> int -> bool -> t = fun f i b ->
     match f with
       | Zero | One -> f
-      | V(j, f0, f1) ->
+      | VariableNode(j, f0, f1) ->
           if j = i
             then if b then f1 else f0
-            else V(j, restrict f0 i b, restrict f1 i b)
+            else VariableNode(j, restrict f0 i b, restrict f1 i b)
 
   (* composition *)
   let compose : t -> int -> t -> t = fun f i g ->
@@ -130,7 +130,7 @@ struct
     match f with
       | Zero -> false
       | One -> true
-      | V (i, f0, f1) -> if List.mem i is then eval f1 is else eval f0 is
+      | VariableNode (i, f0, f1) -> if List.mem i is then eval f1 is else eval f0 is
 
   (* satisfiability *)
   let satisfy : t -> bool = fun f -> not (equal Zero f)
@@ -148,7 +148,7 @@ let test_const_false () =
   assert( equal (const false) Zero )
 
 let test_var_0 () =
-  assert( equal (var 0) (V (0, Zero, One)) )
+  assert( equal (var 0) (VariableNode (0, Zero, One)) )
 
 let test_and_true_and_true () =
   assert( equal (and_ (const true) (const true)) (const true) )
