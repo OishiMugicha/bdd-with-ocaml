@@ -8,11 +8,11 @@
 
 BDD の基本的なデータ型は以下の通りです：
 
-- `type t = Zero | One | V of int * t * t`
+- `type t = Zero | One | VariableNode of int * t * t`
 
   - `Zero`: ブール値 `false` を表す定数。
   - `One`: ブール値 `true` を表す定数。
-  - `V (index, lo, hi)`: 変数ノード。`index` は変数番号、`lo` は変数が `false` の場合のサブ BDD、`hi` は変数が `true` の場合のサブ BDD。
+  - `VariableNode (index, lo, hi)`: 変数ノード。`index` は変数番号、`lo` は変数が `false` の場合のサブ BDD、`hi` は変数が `true` の場合のサブ BDD。
 
 この型は再帰的に定義されており、BDD のツリー構造を表現します。
 
@@ -23,7 +23,7 @@ BDD の基本的なデータ型は以下の通りです：
 | 関数名 | 説明 | シグネチャ | 例 |
 |--------|------|------------|-----|
 | `const` | ブール値から定数 BDD を生成します。 | `bool -> t` | `const true` → `One` |
-| `var` | 指定された変数番号の BDD を生成します。 | `int -> t` | `var 0` → `V (0, Zero, One)` |
+| `var` | 指定された変数番号の BDD を生成します。 | `int -> t` | `var 0` → `VariableNode (0, Zero, One)` |
 | `apply` | 二項演算子を BDD に適用します。 | `(bool -> bool -> bool) -> t -> t -> t` | `apply (&&) (var 0) (var 1)` → 変数 0 と 1 の AND |
 | `not_` | BDD の否定を計算します。 | `t -> t` | `not_ (var 0)` → 変数 0 の否定 |
 | `and_` | 二つの BDD の AND を計算します。 | `t -> t -> t` | `and_ (var 0) (var 1)` → 変数 0 と 1 の AND |

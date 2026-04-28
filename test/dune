@@ -1,0 +1,3 @@
+(test
+ (name bdd_test)
+ (libraries bdd alcotest))
